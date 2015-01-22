@@ -8,8 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = ZabbixReceiver::VERSION
   spec.authors       = ["Ryota Arai"]
   spec.email         = ["ryota-arai@cookpad.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{Server to receive sender data from zabbix-agent.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
