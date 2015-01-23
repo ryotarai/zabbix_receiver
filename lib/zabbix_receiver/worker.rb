@@ -27,23 +27,26 @@ module ZabbixReceiver
 
       case request_type
       when 'active checks'
-        c.write(proxy_request(request_body))
+        response_body = proxy_request(request_body)
       when 'sender data'
         output.receive_sender_data(request)
 
         count = request['data'].size
 
-        respond_with(c, {
+        response_body = format_response({
           "response" => "success",
           "info" => "Processed #{count} Failed 0 Total #{count} Seconds spent 0.000000"
         })
       else
         logger.error "Unknown request type (#{request_type})"
-        respond_with(c, {
+        response_body = format_response({
           "response" => "success",
           "info" => ""
         })
       end
+
+      logger.debug "Raw response: #{response.inspect}"
+      c.write(response_body)
     ensure
       c.close
     end
@@ -79,9 +82,9 @@ module ZabbixReceiver
       JSON.parse(body)
     end
 
-    def respond_with(f, payload)
+    def format_response(payload)
       payload = payload.to_json
-      f.write(ZABBIX_HEADER + [payload.bytesize].pack('q') + payload)
+      ZABBIX_HEADER + [payload.bytesize].pack('q') + payload
     end
   end
 end
