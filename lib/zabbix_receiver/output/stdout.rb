@@ -1,15 +1,16 @@
 module ZabbixReceiver
   module Output
     class Stdout
-      def self.parse_options(argv)
-        {}
+      def self.add_options(opts)
+        opts.string '--indent', default: ''
       end
 
       def initialize(logger, options)
+        @options = options
       end
 
       def receive_sender_data(data)
-        puts data
+        puts @options[:indent] + data.inspect
       end
     end
   end

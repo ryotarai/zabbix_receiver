@@ -1,11 +1,9 @@
 require 'zabbix_receiver'
 require 'serverengine'
-require 'optparse'
+require 'slop'
 
 module ZabbixReceiver
   class CLI
-    REQUIRED_OPTIONS = %i(daemonize workers proxy_to_host proxy_to_port bind port)
-
     def self.start(argv)
       self.new(argv).start
     end
@@ -26,45 +24,44 @@ module ZabbixReceiver
     private
 
     def load_options(argv)
-      argv_for_main, argv_for_output = argv.slice_before('--').to_a
-      argv_for_output.shift
-
-      @options = {
-        daemonize: false,
-        workers: 1,
-        bind: '0.0.0.0',
-        port: 10051,
-        proxy_to_port: 10051,
-        to: 'stdout',
-      }
-
-      parser = OptionParser.new
-      parser.on('--daemonize') {|v| @options[:daemonize] = true }
-      parser.on('--log=VAL', 'default: STDERR') {|v| @options[:log] = v }
-      parser.on('--pid-path=VAL') {|v| @options[:pid_path] = v }
-      parser.on('--workers=VAL') {|v| @options[:worker] = v }
-      parser.on('--bind=VAL') {|v| @options[:bind] = v }
-      parser.on('--port=VAL') {|v| @options[:port] = v }
-      parser.on('--proxy-to-host=VAL') {|v| @options[:proxy_to_host] = v }
-      parser.on('--proxy-to-port=VAL') {|v| @options[:proxy_to_port] = v }
-      parser.on('--to=VAL') {|v| @options[:to] = v }
-      parser.on('--log-level=VAL') {|v| @options[:log_level] = v }
-      parser.parse!(argv_for_main)
-
-      REQUIRED_OPTIONS.each do |key|
-        unless @options.has_key?(key)
-          raise "--#{key.to_s.split('_').join('-')} option is required."
-        end
+      output_type = argv.first
+      output_class = get_output_class(output_type)
+      if output_class
+        argv.shift # output type
+      else
+        output_type = 'stdout'
+        output_class = get_output_class(output_type)
       end
 
+      puts "Using #{output_type} output."
+
+      opts = Slop::Options.new
+      opts.on('--help') { puts opts; exit }
+      opts.bool '--daemonize', default: false
+      opts.string '--log'
+      opts.string '--pid-path'
+      opts.integer '--workers', default: 1
+      opts.string '--bind', default: '0.0.0.0'
+      opts.integer '--port', default: 10051
+      opts.string '--proxy-to-host'
+      opts.integer '--proxy-to-port', default: 10051
+      opts.string '--log-level'
+      output_class.add_options(opts)
+
+      parser = Slop::Parser.new(opts)
+      @options = Hash[parser.parse(argv).to_hash.map do |k, v|
+        [k.to_s.tr('-', '_').to_sym, v]
+      end]
+
       @options[:output_class] = output_class
-      @options[:output_options] = @options[:output_class].parse_options(argv_for_output)
     end
 
-    def output_class
-      require "zabbix_receiver/output/#{@options[:to]}"
-      class_name = @options[:to].split('_').map {|v| v.capitalize }.join
+    def get_output_class(type)
+      require "zabbix_receiver/output/#{type}"
+      class_name = type.split('_').map {|v| v.capitalize }.join
       ZabbixReceiver::Output.const_get(class_name)
+    rescue NameError, LoadError
+      nil
     end
   end
 end

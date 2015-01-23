@@ -5,7 +5,7 @@ module ZabbixReceiver
     ZABBIX_HEADER = "ZBXD\x01"
 
     def run
-      @output = config[:output_class].new(logger, config[:output_options])
+      @output = config[:output_class].new(logger, config)
 
       until @stop
         process(server.sock.accept)
