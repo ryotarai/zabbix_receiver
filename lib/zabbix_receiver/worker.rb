@@ -39,6 +39,10 @@ module ZabbixReceiver
         })
       else
         logger.error "Unknown request type (#{request_type})"
+        respond_with(c, {
+          "response" => "success",
+          "info" => ""
+        })
       end
     ensure
       c.close
