@@ -4,8 +4,11 @@ module ZabbixReceiver
   module Worker
     ZABBIX_HEADER = "ZBXD\x01"
 
+    def output
+      @output ||= config[:output_class].new(logger, config)
+    end
+
     def run
-      @output = config[:output_class].new(logger, config)
 
       until @stop
         process(server.sock.accept)
@@ -26,7 +29,7 @@ module ZabbixReceiver
       when 'active checks'
         c.write(proxy_request(request_body))
       when 'sender data'
-        @output.receive_sender_data(request)
+        output.receive_sender_data(request)
 
         count = request['data'].size
 
