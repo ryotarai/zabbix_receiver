@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+require 'zabbix_receiver'
+ZabbixReceiver::CLI.start(ARGV)
