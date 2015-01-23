@@ -5,16 +5,7 @@ module ZabbixReceiver
     ZABBIX_HEADER = "ZBXD\x01"
 
     def run
-      begin
-        require "zabbix_receiver/output/#{config[:to]}"
-        class_name = config[:to].split('_').map {|v| v.capitalize }.join
-        @output = ZabbixReceiver::Output.const_get(class_name).new
-      rescue LoadError, NameError => err
-        logger.error(err)
-        logger.error("#{config[:to]} output is not found.")
-        sleep 1
-        return
-      end
+      @output = config[:output_class].new(logger, config[:output_options])
 
       until @stop
         process(server.sock.accept)
