@@ -45,7 +45,7 @@ module ZabbixReceiver
         })
       end
 
-      logger.debug "Raw response: #{response.inspect}"
+      logger.debug "Raw response: #{response_body.inspect}"
       c.write(response_body)
     ensure
       c.close
