@@ -1,26 +1,24 @@
 # ZabbixReceiver
 
-TODO: Write a gem description
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'zabbix_receiver'
+```
++--------------+       +-----------------+             +-----------------------+
+|              |       |                 |             |                       |
+| Zabbix Agent +-------> zabbix_receiver +-------------> Output (like Fluentd) |
+|              |       |                 | sender data |                       |
++--------------+       +----------+------+             +-----------------------+
+                                  |                                             
+                                  |      +---------------+                      
+                                  |      |               |                      
+                                  +------> Zabbix Server |                      
+                           active checks |               |                      
+                                         +---------------+                      
 ```
 
-And then execute:
+## Installation and Usage
 
-    $ bundle
+See:
 
-Or install it yourself as:
-
-    $ gem install zabbix_receiver
-
-## Usage
-
-TODO: Write usage instructions here
+- https://github.com/ryotarai/zabbix_receiver-fluentd
 
 ## Contributing
 
